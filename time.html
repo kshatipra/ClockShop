@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timeless Treasures | Gift Shop</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Montserrat:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'brand-gold': '#C5A028', /* Slightly richer gold */
+                        'brand-dark': '#0F172A', /* Darker, more premium navy/black */
+                        'brand-light': '#FAFAF9',
+                        'brand-accent': '#8C7B70'
+                    },
+                    fontFamily: {
+                        serif: ['"Playfair Display"', 'serif'],
+                        sans: ['"Montserrat"', 'sans-serif'],
+                    },
+                    animation: {
+                        'spin-slow': 'spin 60s linear infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                        'fade-in-up': 'fadeInUp 0.8s ease-out forwards',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        },
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #C5A028;
+            border-radius: 4px;
+        }
+
+        /* Hourglass Loader Styles */
+        .hourglass {
+            display: inline-block;
+            position: relative;
+            width: 80px;
+            height: 80px;
+            animation: hourglass-rotate 2s infinite;
+        }
+
+        .hourglass:after,
+        .hourglass:before {
+            content: " ";
+            display: block;
+            border-radius: 50%;
+            width: 0;
+            height: 0;
+            margin: 8px;
+            box-sizing: border-box;
+            border: 32px solid #C5A028;
+            border-color: #C5A028 transparent #C5A028 transparent;
+            animation: hourglass 2s infinite;
+        }
+
+        @keyframes hourglass {
+            0% {
+                transform: rotate(0);
+                animation-timing-function: cubic-bezier(0.55, 0.055, 0.675, 0.19);
+            }
+
+            50% {
+                transform: rotate(900deg);
+                animation-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+            }
+
+            100% {
+                transform: rotate(1800deg);
+            }
+        }
+
+        @keyframes hourglass-rotate {
+            0% {
+                transform: rotate(0);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* View Switching logic */
+        .page-view {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        .page-view.active {
+            display: block;
+            opacity: 1;
+        }
+
+        /* Nav active state */
+        .nav-link.active-link {
+            color: #C5A028;
+            font-weight: 600;
+            position: relative;
+        }
+
+        .nav-link.active-link::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            bottom: -4px;
+            left: 0;
+            background-color: #C5A028;
+            transform: scaleX(1);
+            transition: transform 0.3s ease;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            bottom: -4px;
+            left: 0;
+            background-color: #C5A028;
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .nav-link:hover::after {
+            transform: scaleX(1);
+        }
+
+        /* Smooth Reveal Class */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease-out;
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<!-- Removed 'overflow-hidden' and added 'overflow-x-hidden' to prevent horizontal scroll but allow vertical scroll -->
+
+<body class="font-sans text-gray-700 bg-brand-light antialiased flex flex-col min-h-screen overflow-x-hidden">
+
+    <!-- PRELOADER -->
+    <div id="loader"
+        class="fixed inset-0 bg-brand-dark z-[100] flex flex-col items-center justify-center transition-opacity duration-700">
+        <div class="hourglass mb-4"></div>
+        <h2 class="text-brand-gold font-serif text-2xl tracking-widest animate-pulse">TIMELESS</h2>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="bg-white/95 backdrop-blur-md shadow-sm sticky top-0 z-40 transition-all duration-300 border-b border-gray-100"
+        id="navbar">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-24">
+                <!-- Logo -->
+                <button onclick="window.navigateTo('home')"
+                    class="group flex-shrink-0 flex items-center cursor-pointer focus:outline-none transition-transform hover:scale-105">
+                    <div class="relative">
+                        <i
+                            class="fa-solid fa-hourglass-half text-3xl text-brand-gold mr-3 group-hover:rotate-180 transition-transform duration-700"></i>
+                    </div>
+                    <div class="text-left">
+                        <h1 class="font-serif text-2xl font-bold text-brand-dark leading-none tracking-tight">Timeless
+                        </h1>
+                        <p class="text-[10px] text-brand-gold tracking-[0.3em] uppercase mt-1 font-semibold">Treasures
+                        </p>
+                    </div>
+                </button>
+
+                <!-- Desktop Menu -->
+                <div class="hidden md:flex space-x-10 items-center">
+                    <button onclick="window.navigateTo('home')" id="nav-home"
+                        class="nav-link text-gray-600 hover:text-brand-gold transition font-medium text-sm uppercase tracking-wide focus:outline-none">Home</button>
+                    <button onclick="window.navigateTo('collection')" id="nav-collection"
+                        class="nav-link text-gray-600 hover:text-brand-gold transition font-medium text-sm uppercase tracking-wide focus:outline-none">Collection</button>
+                    <button onclick="window.navigateTo('services')" id="nav-services"
+                        class="nav-link text-gray-600 hover:text-brand-gold transition font-medium text-sm uppercase tracking-wide focus:outline-none">Services</button>
+                    <button onclick="window.navigateTo('about')" id="nav-about"
+                        class="nav-link text-gray-600 hover:text-brand-gold transition font-medium text-sm uppercase tracking-wide focus:outline-none">About</button>
+                    <a href="#contact-footer"
+                        class="text-brand-dark px-6 py-2 border border-brand-dark rounded-full hover:bg-brand-dark hover:text-white transition duration-300 text-sm font-medium tracking-wide uppercase">Contact</a>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden flex items-center">
+                    <button onclick="window.toggleMobileMenu()"
+                        class="text-gray-600 hover:text-brand-dark focus:outline-none p-2">
+                        <i class="fa-solid fa-bars-staggered text-2xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Menu Dropdown -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-t absolute w-full shadow-lg">
+            <div class="px-4 pt-4 pb-6 space-y-2">
+                <button onclick="window.navigateTo('home')"
+                    class="block w-full text-left px-3 py-3 rounded-md text-sm font-semibold uppercase tracking-wide text-gray-700 hover:text-brand-gold hover:bg-gray-50 border-b border-gray-50">Home</button>
+                <button onclick="window.navigateTo('collection')"
+                    class="block w-full text-left px-3 py-3 rounded-md text-sm font-semibold uppercase tracking-wide text-gray-700 hover:text-brand-gold hover:bg-gray-50 border-b border-gray-50">Collection</button>
+                <button onclick="window.navigateTo('services')"
+                    class="block w-full text-left px-3 py-3 rounded-md text-sm font-semibold uppercase tracking-wide text-gray-700 hover:text-brand-gold hover:bg-gray-50 border-b border-gray-50">Services</button>
+                <button onclick="window.navigateTo('about')"
+                    class="block w-full text-left px-3 py-3 rounded-md text-sm font-semibold uppercase tracking-wide text-gray-700 hover:text-brand-gold hover:bg-gray-50">About</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="flex-grow relative">
+
+        <!-- === HOME PAGE VIEW === -->
+        <div id="view-home" class="page-view active">
+            <!-- Hero Section -->
+            <div class="relative bg-brand-dark text-white overflow-hidden min-h-[85vh] flex items-center">
+
+                <!-- Animated Background Elements -->
+                <div class="absolute top-0 right-0 w-full h-full overflow-hidden pointer-events-none">
+                    <!-- Giant Rotating Gear/Clock Face -->
+                    <svg class="absolute -right-20 -top-20 w-[800px] h-[800px] text-brand-gold opacity-5 animate-spin-slow"
+                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.5">
+                        <circle cx="12" cy="12" r="10" />
+                        <path d="M12 6V12L16 14" />
+                        <path
+                            d="M12 2V4M12 20V22M4.93 4.93L6.34 6.34M17.66 17.66L19.07 19.07M2 12H4M20 12H22M4.93 19.07L6.34 17.66M17.66 6.34L19.07 4.93" />
+                    </svg>
+                    <!-- Floating Particles -->
+                    <div class="absolute top-1/4 left-1/4 w-2 h-2 bg-brand-gold rounded-full opacity-20 animate-float"
+                        style="animation-delay: 0s;"></div>
+                    <div class="absolute top-3/4 left-1/2 w-3 h-3 bg-brand-gold rounded-full opacity-10 animate-float"
+                        style="animation-delay: 2s;"></div>
+                    <div class="absolute top-1/3 right-1/4 w-1 h-1 bg-brand-gold rounded-full opacity-30 animate-float"
+                        style="animation-delay: 4s;"></div>
+                </div>
+
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                        <div class="animate-fade-in-up">
+                            <div
+                                class="inline-block px-3 py-1 mb-4 border border-brand-gold/30 rounded-full bg-brand-gold/10 backdrop-blur-sm">
+                                <span class="text-brand-gold text-xs font-bold tracking-[0.2em] uppercase">Est.
+                                    1985</span>
+                            </div>
+                            <h1 class="text-5xl lg:text-7xl font-serif font-bold leading-tight mb-6">
+                                Where Time <br>
+                                <span class="text-brand-gold italic">Stands Still</span>
+                            </h1>
+                            <p
+                                class="text-lg text-gray-300 mb-8 font-light leading-relaxed max-w-lg border-l-2 border-brand-gold pl-6">
+                                Discover our exquisite collection of handcrafted wall clocks, artistic statues, and
+                                bespoke home decor. Perfect for capturing moments.
+                            </p>
+                            <div class="flex flex-col sm:flex-row gap-4">
+                                <button onclick="window.navigateTo('collection')"
+                                    class="group relative px-8 py-4 bg-brand-gold text-brand-dark font-bold tracking-wide uppercase overflow-hidden rounded-sm transition-all hover:bg-white hover:shadow-[0_0_20px_rgba(197,160,40,0.5)]">
+                                    <span class="relative z-10">View Collection</span>
+                                </button>
+                                <button onclick="window.navigateTo('services')"
+                                    class="px-8 py-4 border border-gray-600 text-white font-medium tracking-wide uppercase hover:border-brand-gold hover:text-brand-gold transition-colors duration-300">
+                                    Our Services
+                                </button>
+                            </div>
+                        </div>
+                        <div class="hidden lg:block relative animate-float">
+                            <!-- Hero Image with decorative frame -->
+                            <div
+                                class="relative z-10 rounded-t-[10rem] rounded-b-[2rem] overflow-hidden border-4 border-brand-gold/20 shadow-2xl">
+                                <img src="https://images.unsplash.com/photo-1507643179173-61786aa32768?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                                    alt="Antique Clock"
+                                    class="w-full h-auto object-cover opacity-90 hover:scale-105 transition-transform duration-1000">
+                            </div>
+                            <div
+                                class="absolute -bottom-10 -left-10 w-40 h-40 border border-brand-gold/30 rounded-full z-0">
+                            </div>
+                            <div class="absolute -top-10 -right-10 w-24 h-24 bg-brand-gold/10 rounded-full blur-xl z-0">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Featured Teaser -->
+            <div class="bg-white py-24 reveal">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                    <i class="fa-solid fa-gem text-4xl text-brand-gold mb-4 block"></i>
+                    <h2 class="text-3xl font-serif font-bold text-brand-dark mb-4">Curated Excellence</h2>
+                    <p class="text-gray-500 max-w-2xl mx-auto font-light mb-8">Each piece in our gallery is selected for
+                        its craftsmanship, history, and ability to transcend trends. Explore the latest additions to our
+                        gallery.</p>
+                    <button onclick="window.navigateTo('collection')"
+                        class="text-brand-dark font-bold text-sm tracking-widest uppercase border-b-2 border-brand-gold pb-1 hover:text-brand-gold transition-colors">View
+                        Full Catalog</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- === COLLECTION PAGE VIEW === -->
+        <div id="view-collection" class="page-view">
+            <div class="bg-brand-light py-20 min-h-screen">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="text-center mb-16 animate-fade-in-up">
+                        <span class="text-brand-gold font-bold tracking-[0.2em] text-xs uppercase mb-2 block">The
+                            Gallery</span>
+                        <h2 class="text-4xl md:text-5xl font-serif font-bold text-brand-dark">Our Collection</h2>
+
+                        <div class="mt-10 flex flex-wrap justify-center gap-4">
+                            <button onclick="window.filterProducts('all')"
+                                class="filter-btn active px-6 py-2 rounded-full border border-brand-gold bg-brand-gold text-brand-dark text-xs font-bold uppercase tracking-wider hover:shadow-lg transition-all duration-300 focus:outline-none">All</button>
+                            <button onclick="window.filterProducts('clock')"
+                                class="filter-btn px-6 py-2 rounded-full border border-gray-300 text-gray-500 text-xs font-bold uppercase tracking-wider hover:border-brand-gold hover:text-brand-gold transition-all duration-300 focus:outline-none">Clocks</button>
+                            <button onclick="window.filterProducts('statue')"
+                                class="filter-btn px-6 py-2 rounded-full border border-gray-300 text-gray-500 text-xs font-bold uppercase tracking-wider hover:border-brand-gold hover:text-brand-gold transition-all duration-300 focus:outline-none">Statues</button>
+                        </div>
+                    </div>
+
+                    <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
+                        <!-- Products injected by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- === SERVICES PAGE VIEW === -->
+        <div id="view-services" class="page-view">
+            <div class="py-20 bg-white min-h-screen">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="lg:text-center mb-16 animate-fade-in-up">
+                        <span
+                            class="text-brand-gold font-bold tracking-[0.2em] text-xs uppercase mb-2 block">Expertise</span>
+                        <h2 class="text-4xl md:text-5xl font-serif font-bold text-brand-dark">Bespoke Services</h2>
+                        <p class="mt-6 max-w-2xl text-gray-500 lg:mx-auto font-light">
+                            Beyond our collection, we offer specialized services to ensure your treasures remain
+                            timeless.
+                        </p>
+                    </div>
+
+                    <div class="grid md:grid-cols-2 gap-8 lg:gap-12">
+                        <!-- Service Card 1 -->
+                        <div
+                            class="group relative bg-brand-light p-8 rounded-xl border border-gray-100 hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 overflow-hidden reveal">
+                            <div
+                                class="absolute top-0 right-0 w-24 h-24 bg-brand-gold/10 rounded-bl-full transition-transform group-hover:scale-150 duration-700">
+                            </div>
+                            <div class="relative z-10">
+                                <div
+                                    class="w-14 h-14 bg-white rounded-lg shadow-sm flex items-center justify-center mb-6 text-brand-gold group-hover:bg-brand-gold group-hover:text-white transition-colors duration-300">
+                                    <i class="fa-solid fa-gift text-2xl"></i>
+                                </div>
+                                <h3 class="text-xl font-serif font-bold text-gray-900 mb-3">Premium Gift Wrapping</h3>
+                                <p class="text-gray-500 text-sm leading-relaxed">Signature gold-leaf wrapping paper with
+                                    hand-tied silk ribbons. We can also include a wax-sealed handwritten note for that
+                                    authentic touch.</p>
+                            </div>
+                        </div>
+
+                        <!-- Service Card 2 -->
+                        <div
+                            class="group relative bg-brand-light p-8 rounded-xl border border-gray-100 hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 overflow-hidden reveal">
+                            <div
+                                class="absolute top-0 right-0 w-24 h-24 bg-brand-gold/10 rounded-bl-full transition-transform group-hover:scale-150 duration-700">
+                            </div>
+                            <div class="relative z-10">
+                                <div
+                                    class="w-14 h-14 bg-white rounded-lg shadow-sm flex items-center justify-center mb-6 text-brand-gold group-hover:bg-brand-gold group-hover:text-white transition-colors duration-300">
+                                    <i class="fa-solid fa-pen-nib text-2xl"></i>
+                                </div>
+                                <h3 class="text-xl font-serif font-bold text-gray-900 mb-3">Custom Engraving</h3>
+                                <p class="text-gray-500 text-sm leading-relaxed">Personalize your purchase with names,
+                                    dates, or special messages engraved by our master artisans. Available for brass,
+                                    wood, and glass surfaces.</p>
+                            </div>
+                        </div>
+
+                        <!-- Service Card 3 -->
+                        <div
+                            class="group relative bg-brand-light p-8 rounded-xl border border-gray-100 hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 overflow-hidden reveal">
+                            <div
+                                class="absolute top-0 right-0 w-24 h-24 bg-brand-gold/10 rounded-bl-full transition-transform group-hover:scale-150 duration-700">
+                            </div>
+                            <div class="relative z-10">
+                                <div
+                                    class="w-14 h-14 bg-white rounded-lg shadow-sm flex items-center justify-center mb-6 text-brand-gold group-hover:bg-brand-gold group-hover:text-white transition-colors duration-300">
+                                    <i class="fa-solid fa-clock-rotate-left text-2xl"></i>
+                                </div>
+                                <h3 class="text-xl font-serif font-bold text-gray-900 mb-3">Horological Restoration</h3>
+                                <p class="text-gray-500 text-sm leading-relaxed">Full service restoration for vintage
+                                    timepieces. Our certified horologists perform ultrasonic cleaning, oiling, and
+                                    precision part replacement.</p>
+                            </div>
+                        </div>
+
+                        <!-- Service Card 4 -->
+                        <div
+                            class="group relative bg-brand-light p-8 rounded-xl border border-gray-100 hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 overflow-hidden reveal">
+                            <div
+                                class="absolute top-0 right-0 w-24 h-24 bg-brand-gold/10 rounded-bl-full transition-transform group-hover:scale-150 duration-700">
+                            </div>
+                            <div class="relative z-10">
+                                <div
+                                    class="w-14 h-14 bg-white rounded-lg shadow-sm flex items-center justify-center mb-6 text-brand-gold group-hover:bg-brand-gold group-hover:text-white transition-colors duration-300">
+                                    <i class="fa-solid fa-shield-halved text-2xl"></i>
+                                </div>
+                                <h3 class="text-xl font-serif font-bold text-gray-900 mb-3">White Glove Delivery</h3>
+                                <p class="text-gray-500 text-sm leading-relaxed">Secure, insured transport for fragile
+                                    antique items. We use custom foam inserts and climate-controlled vehicles for
+                                    delivery.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- === ABOUT PAGE VIEW === -->
+        <div id="view-about" class="page-view">
+            <div class="bg-brand-dark py-20 text-white min-h-screen flex items-center">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="flex flex-col lg:flex-row items-center gap-16">
+                        <div class="lg:w-1/2 relative animate-fade-in-up">
+                            <div
+                                class="absolute inset-0 bg-brand-gold transform translate-x-4 translate-y-4 rounded-lg">
+                            </div>
+                            <img src="https://images.unsplash.com/photo-1513519245088-0e12902e5a38?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80"
+                                alt="Shop Interior"
+                                class="relative rounded-lg shadow-2xl border border-gray-700 grayscale hover:grayscale-0 transition-all duration-700">
+                        </div>
+                        <div class="lg:w-1/2 reveal">
+                            <span class="text-brand-gold font-bold tracking-[0.2em] text-xs uppercase mb-4 block">Our
+                                Heritage</span>
+                            <h2 class="text-4xl lg:text-5xl font-serif font-bold mb-6">A Story of <br>Timeless Beauty
+                            </h2>
+                            <p class="text-gray-400 mb-6 leading-relaxed font-light text-lg">
+                                Founded in 1985, <span class="text-white font-medium">Timeless Treasures</span> began as
+                                a small horology workshop in the heart of the city. Over the decades, our passion for
+                                mechanics expanded into an appreciation for all forms of artistic craftsmanship.
+                            </p>
+                            <p class="text-gray-400 mb-8 leading-relaxed font-light">
+                                Today, we curate a unique selection of items that do more than just fill a space—they
+                                tell a story. Whether it's the rhythmic ticking of a grandfather clock or the silent
+                                poise of a bronze statue, we believe every object has a soul waiting to be discovered.
+                            </p>
+
+                            <div
+                                class="flex items-center space-x-4 bg-white/5 p-4 rounded-lg border border-white/10 backdrop-blur-sm w-fit">
+                                <div class="w-14 h-14 rounded-full border-2 border-brand-gold overflow-hidden">
+                                    <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Founder"
+                                        class="w-full h-full object-cover">
+                                </div>
+                                <div>
+                                    <p class="text-base font-bold text-white font-serif">Arthur Pendelton</p>
+                                    <p class="text-xs text-brand-gold uppercase tracking-wider">Master Horologist &
+                                        Founder</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer id="contact-footer"
+        class="bg-brand-dark text-gray-400 py-16 border-t border-gray-800 relative overflow-hidden">
+        <!-- Background texture -->
+        <div class="absolute top-0 left-0 w-full h-full opacity-5 pointer-events-none">
+            <svg width="100%" height="100%">
+                <pattern id="pattern-circles" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+                    <circle cx="2" cy="2" r="1" fill="currentColor"></circle>
+                </pattern>
+                <rect x="0" y="0" width="100%" height="100%" fill="url(#pattern-circles)"></rect>
+            </svg>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-12 relative z-10">
+            <div class="mb-4">
+                <div class="flex items-center mb-6">
+                    <i class="fa-solid fa-hourglass-half text-2xl text-brand-gold mr-3"></i>
+                    <div>
+                        <h3 class="text-white text-lg font-bold font-serif leading-none">Timeless</h3>
+                        <p class="text-[10px] text-brand-gold tracking-[0.2em] uppercase">Treasures</p>
+                    </div>
+                </div>
+                <p class="text-sm font-light leading-relaxed mb-6">Curating memories through exquisite craftsmanship
+                    since 1985. We believe in quality that lasts generations.</p>
+                <div class="flex space-x-4">
+                    <a href="#"
+                        class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-800 hover:bg-brand-gold hover:text-white transition-colors"><i
+                            class="fa-brands fa-instagram"></i></a>
+                    <a href="#"
+                        class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-800 hover:bg-brand-gold hover:text-white transition-colors"><i
+                            class="fa-brands fa-facebook-f"></i></a>
+                    <a href="#"
+                        class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-800 hover:bg-brand-gold hover:text-white transition-colors"><i
+                            class="fa-brands fa-pinterest-p"></i></a>
+                </div>
+            </div>
+
+            <div>
+                <h4
+                    class="text-white text-xs font-bold uppercase mb-6 tracking-widest border-b border-gray-700 pb-2 inline-block">
+                    Explore</h4>
+                <ul class="space-y-3 text-sm font-light">
+                    <li><button onclick="window.navigateTo('collection')"
+                            class="hover:text-brand-gold transition-colors flex items-center"><i
+                                class="fa-solid fa-angle-right text-[10px] mr-2"></i> Collection</button></li>
+                    <li><button onclick="window.navigateTo('services')"
+                            class="hover:text-brand-gold transition-colors flex items-center"><i
+                                class="fa-solid fa-angle-right text-[10px] mr-2"></i> Services</button></li>
+                    <li><button onclick="window.navigateTo('about')"
+                            class="hover:text-brand-gold transition-colors flex items-center"><i
+                                class="fa-solid fa-angle-right text-[10px] mr-2"></i> About Us</button></li>
+                </ul>
+            </div>
+
+            <div>
+                <h4
+                    class="text-white text-xs font-bold uppercase mb-6 tracking-widest border-b border-gray-700 pb-2 inline-block">
+                    Visit Us</h4>
+                <ul class="space-y-3 text-sm font-light">
+                    <li class="flex justify-between"><span class="text-gray-500">Mon - Fri</span> <span>9am - 7pm</span>
+                    </li>
+                    <li class="flex justify-between"><span class="text-gray-500">Saturday</span> <span>10am - 6pm</span>
+                    </li>
+                    <li class="flex justify-between"><span class="text-gray-500">Sunday</span> <span
+                            class="text-brand-gold">Closed</span></li>
+                </ul>
+            </div>
+
+            <div>
+                <h4
+                    class="text-white text-xs font-bold uppercase mb-6 tracking-widest border-b border-gray-700 pb-2 inline-block">
+                    Contact</h4>
+                <ul class="space-y-4 text-sm font-light">
+                    <li class="flex items-start">
+                        <i class="fa-solid fa-location-dot text-brand-gold mt-1 mr-3"></i>
+                        <span>123 Heritage Lane,<br>Antique District, NY 10012</span>
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fa-solid fa-phone text-brand-gold mr-3"></i>
+                        <span>(555) 123-4567</span>
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fa-solid fa-envelope text-brand-gold mr-3"></i>
+                        <span>hello@timeless.com</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div
+            class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 pt-8 border-t border-gray-800 text-center text-xs font-light tracking-wide">
+            &copy; 2023 Timeless Treasures. All rights reserved.
+        </div>
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // --- DATA ---
+        window.products = [
+            {
+                id: 1,
+                name: "Vintage Station Clock",
+                category: "clock",
+                image: "https://images.unsplash.com/photo-1563861826100-9cb868c62586?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+            },
+            {
+                id: 2,
+                name: "Bronze Thinker Statue",
+                category: "statue",
+                image: "https://images.unsplash.com/photo-1551732998-957826eb2a3e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+            },
+            {
+                id: 3,
+                name: "Modern Minimalist Clock",
+                category: "clock",
+                image: "https://images.unsplash.com/photo-1535581652167-3d6b986e68da?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+            },
+            {
+                id: 4,
+                name: "Greek Bust Replica",
+                category: "statue",
+                image: "https://images.unsplash.com/photo-1549887534-1541e9326642?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+            },
+            {
+                id: 5,
+                name: "Industrial Gear Clock",
+                category: "clock",
+                image: "https://images.unsplash.com/photo-1509048191080-d2984bad6ae5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+            },
+            {
+                id: 6,
+                name: "Abstract Ceramic Figure",
+                category: "statue",
+                image: "https://images.unsplash.com/photo-1515263487990-61b07816b324?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+            }
+        ];
+
+        // --- NAVIGATION LOGIC ---
+        window.navigateTo = function (pageId) {
+            // 1. Hide mobile menu if open
+            const menu = document.getElementById('mobile-menu');
+            if (menu && !menu.classList.contains('hidden')) {
+                menu.classList.add('hidden');
+            }
+
+            // 2. Reset Scroll
+            window.scrollTo(0, 0);
+
+            // 3. Update active view with fade effect
+            const views = document.querySelectorAll('.page-view');
+            views.forEach(view => {
+                view.classList.remove('active');
+            });
+
+            // Small delay to allow fade out? For now instant switch but with fade-in animation
+            const activeView = document.getElementById(`view-${pageId}`);
+            if (activeView) {
+                activeView.classList.add('active');
+
+                // Trigger re-animation of elements
+                const animatedElements = activeView.querySelectorAll('.animate-fade-in-up, .reveal');
+                animatedElements.forEach(el => {
+                    el.style.animation = 'none';
+                    el.offsetHeight; /* trigger reflow */
+                    el.style.animation = null;
+                    // For scroll reveal elements
+                    if (el.classList.contains('reveal')) {
+                        el.classList.remove('active');
+                        setTimeout(() => checkScroll(), 100);
+                    }
+                });
+            }
+
+            // 4. Update Nav Link Styling
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => link.classList.remove('active-link'));
+
+            const activeLink = document.getElementById(`nav-${pageId}`);
+            if (activeLink) activeLink.classList.add('active-link');
+        }
+
+        // --- CATALOG FUNCTIONS ---
+        window.renderProducts = function (filter = 'all') {
+            const container = document.getElementById('product-grid');
+            if (!container) return;
+
+            container.innerHTML = '';
+
+            const filteredProducts = filter === 'all'
+                ? window.products
+                : window.products.filter(p => p.category === filter);
+
+            filteredProducts.forEach((product, index) => {
+                const productEl = document.createElement('div');
+                // Added staggering delay based on index
+                productEl.className = 'group relative bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 reveal';
+                productEl.style.transitionDelay = `${index * 100}ms`;
+
+                productEl.innerHTML = `
+                    <div class="w-full h-96 bg-gray-100 relative overflow-hidden">
+                        <div class="absolute inset-0 bg-brand-dark/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10 flex items-center justify-center">
+                            <span class="text-white border border-white px-4 py-2 uppercase tracking-widest text-xs font-bold transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">View Details</span>
+                        </div>
+                        <img src="${product.image}" alt="${product.name}" class="w-full h-full object-center object-cover group-hover:scale-110 transition-transform duration-1000 grayscale-[20%] group-hover:grayscale-0">
+                    </div>
+                    <div class="p-6 text-center bg-white relative z-20">
+                        <div class="w-8 h-[1px] bg-brand-gold mx-auto mb-4 transition-all duration-300 group-hover:w-16"></div>
+                        <h3 class="text-lg font-serif text-brand-dark font-bold mb-1">${product.name}</h3>
+                        <p class="text-[10px] text-gray-500 uppercase tracking-widest font-medium">${product.category}</p>
+                    </div>
+                `;
+                container.appendChild(productEl);
+            });
+
+            // Update filter button styles
+            const btns = document.querySelectorAll('.filter-btn');
+            btns.forEach(btn => {
+                btn.classList.remove('bg-brand-gold', 'text-brand-dark', 'border-brand-gold');
+                btn.classList.add('text-gray-500', 'border-gray-300');
+
+                const txt = btn.innerText.toLowerCase();
+                if (txt === filter || (filter === 'all' && txt === 'all') || (filter === 'clock' && txt.includes('clock')) || (filter === 'statue' && txt.includes('statue'))) {
+                    btn.classList.add('bg-brand-gold', 'text-brand-dark', 'border-brand-gold');
+                    btn.classList.remove('text-gray-500', 'border-gray-300');
+                }
+            });
+
+            // Re-trigger scroll check for new elements
+            setTimeout(checkScroll, 100);
+        };
+
+        window.filterProducts = function (cat) {
+            window.renderProducts(cat);
+        };
+
+        window.toggleMobileMenu = function () {
+            const menu = document.getElementById('mobile-menu');
+            if (menu) menu.classList.toggle('hidden');
+        };
+
+        // --- SCROLL ANIMATION LOGIC ---
+        function checkScroll() {
+            const reveals = document.querySelectorAll('.reveal');
+            const windowHeight = window.innerHeight;
+            const elementVisible = 100;
+
+            reveals.forEach((reveal) => {
+                const elementTop = reveal.getBoundingClientRect().top;
+                if (elementTop < windowHeight - elementVisible) {
+                    reveal.classList.add('active');
+                }
+            });
+        }
+
+        // Init
+        window.addEventListener('DOMContentLoaded', () => {
+            // Loader Logic
+            setTimeout(() => {
+                const loader = document.getElementById('loader');
+                if (loader) {
+                    loader.classList.add('opacity-0', 'pointer-events-none');
+                }
+            }, 2000); // 2 second fake load time
+
+            window.renderProducts();
+
+            // Set initial page
+            window.navigateTo('home');
+
+            // Event Listeners
+            window.addEventListener('scroll', checkScroll);
+            checkScroll(); // Check on load
+
+            const navbar = document.getElementById('navbar');
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 20) {
+                    navbar.classList.add('shadow-md', 'bg-white/95');
+                    navbar.classList.remove('bg-white', 'py-2');
+                } else {
+                    navbar.classList.remove('shadow-md');
+                    // navbar.classList.add('py-4'); // Optional: make nav taller at top
+                }
+            });
+        });
+
+    </script>
+</body>
+
+</html>
